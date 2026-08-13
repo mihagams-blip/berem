@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import FindPicture from './modes/FindPicture.jsx';
 import MissingLetter from './modes/MissingLetter.jsx';
 import DinoSyllables from './modes/DinoSyllables.jsx';
+import CrabsAdd from './modes/CrabsAdd.jsx';
 import { Confetti, Stars } from './ui/Bits.jsx';
 import { sndCorrect, sndRoar, sndWin, unlockAudio } from './lib/audio.js';
 import { GLOBAL_CSS, INK, LEVELS, MODES, STAR_GOAL, bgFor, bigBtn, chip } from './lib/styles.js';
@@ -81,7 +82,7 @@ export default function App() {
     >
       <style>{GLOBAL_CSS}</style>
 
-      {screen !== 'home' && screen !== 'trophy' && <Stars count={stars} />}
+      {screen !== 'home' && screen !== 'trophy' && screen !== 'crabs' && <Stars count={stars} />}
 
       {screen === 'home' && (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '4vh', width: '100%', maxWidth: '400px' }}>
@@ -118,6 +119,9 @@ export default function App() {
       {screen === 'pics' && <FindPicture {...shared} numWords={numWords} />}
       {screen === 'letter' && <MissingLetter {...shared} />}
       {screen === 'dino' && <DinoSyllables {...shared} />}
+      {/* Rakci imajo svojo rundo petih nalog in svoj pregled, zato ne uporabljajo
+          skupnega traku zvezdic ne skupne pohvale. */}
+      {screen === 'crabs' && <CrabsAdd onHome={goHome} />}
 
       {screen === 'trophy' && (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', marginTop: '10vh' }}>

@@ -12,7 +12,8 @@ export const LEVELS = {
 export const MODES = {
   pics: { label: '🖼️ NAJDI SLIKO', color: '#FF5D5D' },
   letter: { label: '🔤 MANJKA ČRKA', color: '#2EC4B6' },
-  dino: { label: '🦖 DINOZAVER', color: '#3FA05A' }
+  dino: { label: '🦖 DINOZAVER', color: '#3FA05A' },
+  crabs: { label: '🦀 RAČUNAM', color: '#0E7C86' }
 };
 
 export const bigBtn = (bg) => ({
@@ -46,10 +47,11 @@ export const chip = (active, color) => ({
 export const homeBtn = { padding: '10px 20px', fontSize: '16px' };
 
 /** Ozadje se spremeni po načinu, da otrok takoj ve, kje je. */
-export const bgFor = (mode) =>
-  mode === 'dino'
-    ? 'linear-gradient(180deg,#B8E6C8 0%,#DCF2D0 60%,#F5EBC8 100%)'
-    : 'linear-gradient(180deg,#8FD3FF 0%,#C9F2E5 70%,#FFF6C9 100%)';
+export const bgFor = (mode) => {
+  if (mode === 'dino') return 'linear-gradient(180deg,#B8E6C8 0%,#DCF2D0 60%,#F5EBC8 100%)';
+  if (mode === 'crabs') return 'linear-gradient(180deg,#FBEFD9 0%,#F3DFBB 100%)';
+  return 'linear-gradient(180deg,#8FD3FF 0%,#C9F2E5 70%,#FFF6C9 100%)';
+};
 
 export const GLOBAL_CSS = `
   @keyframes pop { 0%{transform:scale(0.3)} 70%{transform:scale(1.15)} 100%{transform:scale(1)} }

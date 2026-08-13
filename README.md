@@ -9,8 +9,10 @@ Trije načini:
 | 🖼️ **NAJDI SLIKO** | prebere napisano besedo in pokaže ustrezno sliko |
 | 🔤 **MANJKA ČRKA** | dopolni manjkajočo črko v besedi |
 | 🦖 **DINOZAVER** | prebere ime po zlogih (`TI · RA · NO · ZA · VER`) in izbere pravo žival med štirimi |
+| 🦀 **RAČUNAM** | prešteje rakce in sešteje dve ali tri številke do 20 |
 
-Deset zvezdic da pokal. Tri težavnosti filtrirajo dolžino besed in — pri
+Rakci imajo svojo rundo petih nalog in svoj zaključni pregled; ostali trije
+načini štejejo do desetih zvezdic. Deset zvezdic da pokal. Tri težavnosti filtrirajo dolžino besed in — pri
 dinozavrih — kako podobne so napačne izbire.
 
 ## Zakaj zlogi
@@ -56,6 +58,9 @@ pa je branje in ne sme utihniti.
 bash tools/make-voice-pack.sh --dry-run
 bash tools/make-voice-pack.sh          # 73 posnetkov: 22 imen + 51 zlogov
 ```
+
+Posnetki števil (`num.0`–`num.20`) so preneseni iz Dino Akademije — isti glas,
+zato se z zlogi ujemajo. Uporabi jih način RAČUNAM: tap na račun ga prebere.
 
 Potrebuje macOS z glasom **Tina** (sl_SI). ffmpeg ni potreben — rez tišine in
 izenačitev glasnosti opravi `tools/trim-audio.py`, zapis pa vgrajeni `afconvert`.
