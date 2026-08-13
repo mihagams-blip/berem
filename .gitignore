@@ -1,0 +1,15 @@
+node_modules/
+dist/
+
+# macOS
+.DS_Store
+._*
+
+# Vmesne datoteke generatorja zvoka
+*.wav
+*.aiff
+tools/work/
+
+# Uredniki
+.vscode/
+.idea/

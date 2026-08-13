@@ -1,0 +1,170 @@
+import { useEffect, useRef, useState } from 'react';
+import FindPicture from './modes/FindPicture.jsx';
+import MissingLetter from './modes/MissingLetter.jsx';
+import DinoSyllables from './modes/DinoSyllables.jsx';
+import { Confetti, Stars } from './ui/Bits.jsx';
+import { sndCorrect, sndRoar, sndWin, unlockAudio } from './lib/audio.js';
+import { GLOBAL_CSS, INK, LEVELS, MODES, STAR_GOAL, bgFor, bigBtn, chip } from './lib/styles.js';
+
+export default function App() {
+  const [screen, setScreen] = useState('home'); // home | pics | letter | dino | trophy
+  const [numWords, setNumWords] = useState(1);
+  const [level, setLevel] = useState('mid');
+  const [stars, setStars] = useState(0);
+  const [bravo, setBravo] = useState(false);
+  const timerRef = useRef(null);
+
+  // iOS zvoka brez geste ne dovoli. Poslušamo VSAK dotik, ker se kontekst ob
+  // vrnitvi iz ozadja spet uspava.
+  useEffect(() => {
+    window.addEventListener('pointerdown', unlockAudio, { passive: true });
+    return () => window.removeEventListener('pointerdown', unlockAudio);
+  }, []);
+
+  useEffect(() => () => clearTimeout(timerRef.current), []);
+
+  const isDino = screen === 'dino';
+
+  /**
+   * Zvezdica + kratka pohvala, nato naslednji krog (ali pokal ob desetih).
+   *
+   * Časovnik je NAMENOMA zunaj `setStars` updaterja: React ga v StrictMode
+   * pokliče dvakrat, kar bi ustvarilo dva časovnika in preskočilo en krog.
+   * Napaka se pokaže samo v razvoju, zato jo je lahko spregledati do objave.
+   */
+  const earnStar = (next) => {
+    isDino ? sndRoar() : sndCorrect();
+    const ns = stars + 1;
+    setStars(ns);
+    setBravo(true);
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      setBravo(false);
+      if (ns >= STAR_GOAL) {
+        sndWin();
+        setScreen('trophy');
+      } else {
+        next();
+      }
+    }, 1600);
+  };
+
+  const start = (mode) => {
+    setBravo(false);
+    setStars(0);
+    setScreen(mode);
+  };
+
+  const goHome = () => {
+    clearTimeout(timerRef.current);
+    setBravo(false);
+    setStars(0);
+    setScreen('home');
+  };
+
+  const shared = { level, onStar: earnStar, onHome: goHome, busy: bravo };
+
+  return (
+    <div
+      style={{
+        minHeight: '100dvh',
+        fontFamily: "'Fredoka', sans-serif",
+        background: bgFor(screen),
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        padding: '16px',
+        paddingBottom: 'calc(16px + env(safe-area-inset-bottom))',
+        boxSizing: 'border-box',
+        userSelect: 'none'
+      }}
+    >
+      <style>{GLOBAL_CSS}</style>
+
+      {screen !== 'home' && screen !== 'trophy' && <Stars count={stars} />}
+
+      {screen === 'home' && (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '4vh', width: '100%', maxWidth: '400px' }}>
+          <div style={{ fontSize: '52px', marginBottom: '6px' }}>📖</div>
+          <div style={{ fontWeight: 700, fontSize: 'clamp(40px,11vw,58px)', color: INK, letterSpacing: '3px', marginBottom: '4vh' }}>
+            BEREM
+          </div>
+
+          {Object.entries(MODES).map(([key, m]) => (
+            <button key={key} style={{ ...bigBtn(m.color), width: '100%', marginBottom: '14px' }} onClick={() => start(key)}>
+              {m.label}
+            </button>
+          ))}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center', marginTop: '3vh' }}>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {Object.entries(LEVELS).map(([key, L]) => (
+                <button key={key} onClick={() => setLevel(key)} style={chip(level === key, L.color)}>
+                  {L.dot} {L.label}
+                </button>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {[1, 2].map((n) => (
+                <button key={n} onClick={() => setNumWords(n)} style={chip(numWords === n, '#6C63FF')}>
+                  {n === 1 ? '1 BESEDA' : '2 BESEDI'}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {screen === 'pics' && <FindPicture {...shared} numWords={numWords} />}
+      {screen === 'letter' && <MissingLetter {...shared} />}
+      {screen === 'dino' && <DinoSyllables {...shared} />}
+
+      {screen === 'trophy' && (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', marginTop: '10vh' }}>
+          <Confetti />
+          <div style={{ fontSize: '100px', animation: 'bounce 1s ease infinite' }}>🏆</div>
+          <div style={{ fontWeight: 700, fontSize: 'clamp(44px,12vw,68px)', color: INK, letterSpacing: '2px' }}>SUPER!</div>
+          <div style={{ fontSize: 'clamp(18px,5vw,24px)', fontWeight: 700, color: '#4A4468' }}>{STAR_GOAL} ⭐ ZBRANIH!</div>
+          <button style={bigBtn('#FF9F1C')} onClick={goHome}>
+            🔄 ŠE ENKRAT
+          </button>
+        </div>
+      )}
+
+      {bravo && (
+        <>
+          <Confetti dino={isDino} />
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'rgba(255,255,255,0.8)',
+              zIndex: 50,
+              gap: '12px',
+              pointerEvents: 'none'
+            }}
+          >
+            <div style={{ fontSize: '90px', animation: 'pop 0.5s ease' }}>{isDino ? '🦖' : '🎉'}</div>
+            <div
+              style={{
+                fontWeight: 700,
+                fontSize: 'clamp(52px,15vw,84px)',
+                color: '#FF9F1C',
+                letterSpacing: '3px',
+                animation: 'pop 0.6s ease',
+                textShadow: '0 4px 0 rgba(0,0,0,0.1)'
+              }}
+            >
+              {isDino ? 'RAAAWR!' : 'BRAVO!'}
+            </div>
+            <div style={{ fontSize: '44px', animation: 'bounce 0.8s ease infinite' }}>⭐</div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
