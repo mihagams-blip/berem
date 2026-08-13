@@ -147,6 +147,7 @@ export const WORDS = [
   { w: "RAČUNALNIK", e: "💻", syl: ["RA", "ČU", "NAL", "NIK"] },
   { w: "TELEVIZIJA", e: "📺", syl: ["TE", "LE", "VI", "ZI", "JA"] },
   { w: "KLJUČAVNICA", e: "🔒", syl: ["KLJU", "ČAV", "NI", "CA"] },
+  { w: "EVRO", e: "💶", syl: ["EV", "RO"] },
 ];
 
 /** Besede, dolge toliko črk ali manj — za lažje stopnje. */
