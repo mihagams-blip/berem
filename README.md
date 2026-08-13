@@ -9,11 +9,29 @@ Trije načini:
 | 🖼️ **NAJDI SLIKO** | prebere napisano besedo in pokaže ustrezno sliko |
 | 🔤 **MANJKA ČRKA** | dopolni manjkajočo črko v besedi |
 | 🦖 **DINOZAVER** | prebere ime po zlogih (`TI · RA · NO · ZA · VER`) in izbere pravo žival med štirimi |
-| 🦀 **RAČUNAM** | prešteje rakce in sešteje dve ali tri številke do 20 |
+| 🦀 **RAČUNAM** | sešteva do 20, do 100 ali do 1000 — z rakci, vedri in ladjami |
 
 Rakci imajo svojo rundo petih nalog in svoj zaključni pregled; ostali trije
 načini štejejo do desetih zvezdic. Deset zvezdic da pokal. Tri težavnosti filtrirajo dolžino besed in — pri
 dinozavrih — kako podobne so napačne izbire.
+
+## Zakaj vedra in ladje
+
+Do 20 otrok šteje posamezne rakce. Nad tem štetje po ena ni več izvedljivo in
+tudi ni cilj — cilj je mestna vrednost. Zato slika ostane, spremeni pa se, kaj
+en predmet **pomeni**:
+
+```
+🦀 = 1        🪣 = 10 rakcev        ⛵ = 10 veder (100 rakcev)
+```
+
+Pri 250 otrok ne šteje dvesto petdeset stvari, ampak vidi dve ladji in pet
+veder — in prav to je vsebina računanja do 1000. Na stopnji DO 1000 so
+seštevanci večkratniki deset, sicer bi bilo predmetov preveč.
+
+Napačna odgovora sta zato tudi vezana na stopnjo: do 20 se zmotiš za ena do
+tri, do 100 tudi za deset, do 1000 za deset in sto. Napaka pri deseticah je
+prava napaka, ki jo hočemo loviti.
 
 ## Zakaj zlogi
 
@@ -59,8 +77,10 @@ bash tools/make-voice-pack.sh --dry-run
 bash tools/make-voice-pack.sh          # 73 posnetkov: 22 imen + 51 zlogov
 ```
 
-Posnetki števil (`num.0`–`num.20`) so preneseni iz Dino Akademije — isti glas,
-zato se z zlogi ujemajo. Uporabi jih način RAČUNAM: tap na račun ga prebere.
+Števila (`num.0`–`num.100` in vse desetice do `num.1000`, skupaj 191 posnetkov)
+generira ista skripta. Glas Tina slovenske številke prebere kot **besede**
+(»34« → štiriintrideset), zato jih podamo kot števke; sestavljanje iz delov bi
+zaradi slovenske inverzije (štiri-in-trideset) dalo napačen vrstni red.
 
 Potrebuje macOS z glasom **Tina** (sl_SI). ffmpeg ni potreben — rez tišine in
 izenačitev glasnosti opravi `tools/trim-audio.py`, zapis pa vgrajeni `afconvert`.

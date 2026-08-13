@@ -57,6 +57,15 @@ node --input-type=module -e '
   const m = await import("'"${ROOT}"'/src/content/dinos.js");
   for (const d of m.DINOS) process.stdout.write(`dino.${d.id}\t165\t${d.name}\n`);
   for (const s of m.SYLLABLES) process.stdout.write(`syl.${s}\t140\t${s}\n`);
+
+  // Števila za način RAČUNAM. Glas Tina slovenske številke prebere kot BESEDE
+  // ("34" → štiriintrideset), zato jih podamo kot števke in se izognemo
+  // sestavljanju iz delov — slovenska inverzija (štiri-in-trideset) bi pri
+  // lepljenju "trideset"+"štiri" dala napačen vrstni red.
+  const nums = new Set();
+  for (let n = 0; n <= 100; n++) nums.add(n);        // do 20 in do 100
+  for (let n = 110; n <= 1000; n += 10) nums.add(n); // do 1000: same desetice
+  for (const n of [...nums].sort((a, b) => a - b)) process.stdout.write(`num.${n}\t165\t${n}\n`);
 ' > "$LIST"
 
 COUNT="$(wc -l < "$LIST" | tr -d ' ')"

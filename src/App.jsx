@@ -121,7 +121,7 @@ export default function App() {
       {screen === 'dino' && <DinoSyllables {...shared} />}
       {/* Rakci imajo svojo rundo petih nalog in svoj pregled, zato ne uporabljajo
           skupnega traku zvezdic ne skupne pohvale. */}
-      {screen === 'crabs' && <CrabsAdd onHome={goHome} />}
+      {screen === 'crabs' && <CrabsAdd level={level} setLevel={setLevel} onHome={goHome} />}
 
       {screen === 'trophy' && (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', marginTop: '10vh' }}>
