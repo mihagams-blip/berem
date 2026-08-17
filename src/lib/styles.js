@@ -9,7 +9,7 @@ export const LEVELS = {
   hard: { dot: '🔴', label: 'TEŽKO', min: 6, max: 12, cards: 8, opts: 8, color: '#E85454' }
 };
 
-/** Sedem načinov je preveč za stolpec gumbov, zato so ploščice v mreži 2×n. */
+/** Osem načinov je preveč za stolpec gumbov, zato so ploščice v mreži 2×4. */
 export const MODES = {
   pics: { icon: '🖼️', label: 'NAJDI SLIKO', color: '#FF5D5D' },
   letter: { icon: '🔤', label: 'MANJKA ČRKA', color: '#2EC4B6' },
@@ -17,7 +17,8 @@ export const MODES = {
   dino: { icon: '🦖', label: 'DINOZAVRI', color: '#3FA05A' },
   cars: { icon: '🚗', label: 'AVTOMOBILI', color: '#3B6FD4' },
   heroes: { icon: '🧚', label: 'JUNAKI', color: '#B0559E' },
-  myth: { icon: '⚡', label: 'BOGOVI', color: '#C6892B' }
+  myth: { icon: '⚡', label: 'BOGOVI', color: '#C6892B' },
+  cmd: { icon: '🤖', label: 'UKAZI', color: '#5A57C4' }
 };
 
 export const bigBtn = (bg) => ({
@@ -77,6 +78,7 @@ export const bgFor = (mode) => {
   if (mode === 'cars') return 'linear-gradient(180deg,#D6E4FA 0%,#EDF3FC 70%,#FFF6C9 100%)';
   if (mode === 'heroes') return 'linear-gradient(180deg,#F2DDF0 0%,#F7E9F5 70%,#FFF6C9 100%)';
   if (mode === 'myth') return 'linear-gradient(180deg,#F6E4C2 0%,#FBF0DA 70%,#EFE7F7 100%)';
+  if (mode === 'cmd') return 'linear-gradient(180deg,#D9D6F2 0%,#EDEBF9 60%,#DCEEF7 100%)';
   return 'linear-gradient(180deg,#8FD3FF 0%,#C9F2E5 70%,#FFF6C9 100%)';
 };
 

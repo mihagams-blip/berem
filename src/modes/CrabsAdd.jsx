@@ -1,6 +1,7 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { say, sndCorrect, sndTap, sndWrong, sndWin } from '../lib/audio.js';
 import { Confetti } from '../ui/Bits.jsx';
+import { LEVELS, OPS, formula, makeProblem, rand, toUnits } from '../lib/arith.js';
 import { INK, bigBtn, chip, homeBtn } from '../lib/styles.js';
 
 /** Obalna paleta — ta način ima svoj svet, zato tudi svoje barve. */
@@ -15,104 +16,67 @@ const C = {
 };
 
 const TOTAL = 5;
-const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
 const PRAISE = ['Bravo! 🎉', 'Odlično! ⭐', 'Super si! 🦀', 'Juhu, pravilno! 🐚'];
 const RETRY = ['Skoraj! Preštej še enkrat. 🦀', 'Poskusi znova — štej počasi! 🐚', 'Skoraj si! Še enkrat preštej. ⭐'];
 
 /**
- * Tri stopnje, tri različne SLIKE istega števila.
+ * Predmet, ki gre stran: obledi in ga prečrta rdeča črta.
  *
- * Do 20 otrok šteje posamezne rakce. Nad tem štetje po ena ni več izvedljivo in
- * tudi ni cilj — cilj je mestna vrednost. Zato rakci gredo v vedra po deset,
- * vedra pa na ladje po sto. Slika ostane, spremeni se, kaj en predmet POMENI:
- *
- *   🦀 = 1     🪣 = 10 rakcev     ⛵ = 10 veder (100 rakcev)
- *
- * Tako otrok pri 250 ne šteje dvesto petdeset stvari, ampak vidi dve ladji in
- * pet veder — in prav to je vsebina računanja do 1000.
+ * Črta se drži SVOJEGA predmeta in ne sega čezenj. Ko je segala, so se prečrtaji
+ * sosedov v vrsti zlili v eno dolgo črto in vrsta je izpadla prečrtana kot
+ * celota — namesto štirih predmetov, od katerih gre vsak zase stran.
  */
-const LEVELS = {
-  easy: {
-    label: 'DO 20',
-    dot: '🟢',
-    color: '#3FBF6B',
-    maxSum: 20,
-    /** Do 20 sme biti tudi tri številke — višje bi bilo preveč predmetov. */
-    allowThree: true,
-    units: [{ emoji: '🦀', value: 1 }],
-    offsets: [1, 2, 3]
-  },
-  mid: {
-    label: 'DO 100',
-    dot: '🟡',
-    color: '#F2B705',
-    maxSum: 100,
-    allowThree: false,
-    units: [
-      { emoji: '🪣', value: 10 },
-      { emoji: '🦀', value: 1 }
-    ],
-    // Napake pri desetkah so tu prava napaka, ki jo hočemo loviti.
-    offsets: [1, 2, 10]
-  },
-  hard: {
-    label: 'DO 1000',
-    dot: '🔴',
-    color: '#E85454',
-    maxSum: 1000,
-    allowThree: false,
-    /** Seštevanci so večkratniki deset, sicer bi bilo predmetov preveč. */
-    step: 10,
-    units: [
-      { emoji: '⛵', value: 100 },
-      { emoji: '🪣', value: 10 }
-    ],
-    offsets: [10, 20, 100]
-  }
-};
+function Item({ emoji, gone }) {
+  return (
+    <span style={{ position: 'relative', display: 'inline-block', fontSize: 'clamp(18px, 5.6vw, 26px)', lineHeight: 1.1 }}>
+      <span style={{ opacity: gone ? 0.28 : 1 }}>{emoji}</span>
+      {gone && (
+        <span
+          style={{
+            position: 'absolute',
+            left: '4%',
+            right: '4%',
+            top: '50%',
+            height: 3,
+            borderRadius: 2,
+            background: '#E23B3B',
+            transform: 'translateY(-50%) rotate(-20deg)'
+          }}
+        />
+      )}
+    </span>
+  );
+}
 
 /**
- * Sestavi račun. Napačna odgovora sta blizu pravilnega in na stopnji, ki šteje:
- * do 20 za ena do tri, do 100 tudi za deset, do 1000 za deset in sto. Če bi bila
- * daleč, bi otrok uganil brez štetja.
+ * Ena skupina. Predmeti so v vrstah po pet — petica prihrani štetje po ena.
+ *
+ * Pri odštevanju NI druge skupine: `gone` prečrta zadnjih toliko predmetov v
+ * isti skupini, ker je odštevanje odvzemanje in mora tako tudi izgledati. Dve
+ * ločeni skupini bi risali primerjavo, ne odvzemanja.
  */
-function makeProblem(levelKey, count) {
-  const L = LEVELS[levelKey];
-  const step = L.step || 1;
-  const maxAddend = Math.floor((L.maxSum / (count === 3 ? 3 : 2) / step) * 1.4) * step;
+function NumberGroup({ n, gone = 0, level, color }) {
+  const units = LEVELS[level].units;
+  const have = toUnits(n, units);
+  const away = toUnits(gone, units);
 
-  let nums;
-  do {
-    nums = Array.from({ length: count }, () => rand(1, Math.max(1, maxAddend / step)) * step);
-  } while (nums.reduce((a, b) => a + b, 0) > L.maxSum);
-  const sum = nums.reduce((a, b) => a + b, 0);
-
-  const wrong = new Set();
-  let guard = 0;
-  while (wrong.size < 2 && guard++ < 60) {
-    const off = L.offsets[rand(0, L.offsets.length - 1)] * (Math.random() < 0.5 ? -1 : 1);
-    const w = sum + off;
-    if (w >= 1 && w <= L.maxSum && w !== sum) wrong.add(w);
-  }
-  while (wrong.size < 2) wrong.add(sum + wrong.size + 1); // varovalo, nikoli prazno
-
-  return { nums, sum, options: [sum, ...wrong].sort(() => Math.random() - 0.5) };
-}
-
-/** Razstavi število na predmete stopnje: [{emoji, count}] od največjega navzdol. */
-function toUnits(n, units) {
-  let rest = n;
-  return units.map((u) => {
-    const c = Math.floor(rest / u.value);
-    rest -= c * u.value;
-    return { emoji: u.emoji, count: c };
+  // Vrste po pet se lomijo ZNOTRAJ mesta: vedra ostanejo pri vedrih, rakci pri
+  // rakcih. Sicer bi se pri 63 v isti vrstici znašla vedro in rakec, kar mestno
+  // vrednost prav zabriše.
+  //
+  // Zadnji predmeti na vsakem mestu odidejo. Generator jamči `away <= have`,
+  // `min` je le varovalo.
+  const rows = [];
+  have.forEach((p, ui) => {
+    const off = Math.min(away[ui].count, p.count);
+    const items = Array.from({ length: p.count }, (_, i) => ({
+      emoji: p.emoji,
+      gone: i >= p.count - off
+    }));
+    for (let i = 0; i < items.length; i += 5) rows.push(items.slice(i, i + 5));
   });
-}
 
-/** Ena skupina seštevanca. Predmeti so v vrstah po pet — petica prihrani štetje po ena. */
-function NumberGroup({ n, level, color }) {
-  const parts = toUnits(n, LEVELS[level].units).filter((p) => p.count > 0);
   return (
     <div
       style={{
@@ -127,19 +91,13 @@ function NumberGroup({ n, level, color }) {
         boxShadow: '0 3px 0 rgba(36,59,74,0.12)'
       }}
     >
-      {parts.map((p) => {
-        const rows = [];
-        for (let i = 0; i < p.count; i += 5) rows.push(Math.min(5, p.count - i));
-        return rows.map((c, ri) => (
-          <div key={`${p.emoji}-${ri}`} style={{ display: 'flex', gap: 2 }}>
-            {Array.from({ length: c }).map((_, i) => (
-              <span key={i} style={{ fontSize: 'clamp(18px, 5.6vw, 26px)', lineHeight: 1.1 }}>
-                {p.emoji}
-              </span>
-            ))}
-          </div>
-        ));
-      })}
+      {rows.map((row, ri) => (
+        <div key={ri} style={{ display: 'flex', gap: 4 }}>
+          {row.map((it, i) => (
+            <Item key={i} emoji={it.emoji} gone={it.gone} />
+          ))}
+        </div>
+      ))}
       <div style={{ fontSize: 'clamp(22px, 6.4vw, 30px)', fontWeight: 700, color: INK, marginTop: 2 }}>{n}</div>
     </div>
   );
@@ -172,13 +130,15 @@ function Legend({ level }) {
 }
 
 /**
- * RAČUNAM — seštevanje s štetjem.
+ * RAČUNAM — seštevanje in odštevanje s štetjem.
  *
  * Runda ima pet nalog in svoj zaključni pregled, zato ta način NE uporablja
  * skupnega traku zvezdic; napredek kaže sam.
  */
 export default function CrabsAdd({ level, setLevel, onHome }) {
   const [count, setCount] = useState(0); // 0 = izbira, 2 ali 3 = igra
+  // Operacija je LOKALNA, za razliko od stopnje, ki je skupna vsem načinom.
+  const [op, setOp] = useState('add');
   const [problem, setProblem] = useState(null);
   const [history, setHistory] = useState([]);
   const [firstTry, setFirstTry] = useState(true);
@@ -200,7 +160,7 @@ export default function CrabsAdd({ level, setLevel, onHome }) {
 
   const start = (n) => {
     setCount(n);
-    setProblem(makeProblem(level, n));
+    setProblem(makeProblem(level, n, op));
     setHistory([]);
     setFirstTry(true);
     setFeedback(null);
@@ -208,11 +168,20 @@ export default function CrabsAdd({ level, setLevel, onHome }) {
     setDone(false);
   };
 
-  /** Prebere račun: »pet plus tri«. Opora za otroka, ki števil še ne bere zanesljivo. */
+  /**
+   * Prebere račun: »osem minus tri«. Opora za otroka, ki števil še ne bere
+   * zanesljivo — in operator MORA biti izgovorjen, sicer »osem … tri« zveni
+   * enako za plus in minus.
+   */
   const readProblem = () => {
     if (!problem) return;
     sndTap();
-    problem.nums.forEach((n, i) => later(() => say(`num.${n}`), i * 900));
+    const seq = [];
+    problem.nums.forEach((n, i) => {
+      if (i > 0) seq.push(problem.op === 'sub' ? 'op.minus' : 'op.plus');
+      seq.push(`num.${n}`);
+    });
+    seq.forEach((key, i) => later(() => say(key), i * 780));
   };
 
   const pick = (answer, idx) => {
@@ -222,7 +191,7 @@ export default function CrabsAdd({ level, setLevel, onHome }) {
       setLocked(true);
       sndCorrect();
       later(() => say(`num.${problem.sum}`), 420);
-      const next = [...history, { nums: problem.nums, sum: problem.sum, correct: firstTry }];
+      const next = [...history, { op: problem.op, nums: problem.nums, sum: problem.sum, correct: firstTry }];
       setHistory(next);
       setFeedback({ type: 'good', msg: PRAISE[rand(0, PRAISE.length - 1)] });
       later(() => {
@@ -230,7 +199,7 @@ export default function CrabsAdd({ level, setLevel, onHome }) {
           sndWin();
           setDone(true);
         } else {
-          setProblem(makeProblem(level, count));
+          setProblem(makeProblem(level, count, op));
           setFirstTry(true);
           setFeedback(null);
           setLocked(false);
@@ -272,18 +241,31 @@ export default function CrabsAdd({ level, setLevel, onHome }) {
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <button onClick={() => start(2)} style={{ ...bigBtn(C.sea), width: '100%' }}>
-            🦀 + 🦀 &nbsp; DVE ŠTEVILKI
+          <button onClick={() => start(2)} style={{ ...bigBtn(OPS[op].color), width: '100%' }}>
+            🦀 {OPS[op].sign} 🦀 &nbsp; DVE ŠTEVILKI
           </button>
-          {L.allowThree && (
+          {/* Tri številke le pri seštevanju: trojno odštevanje je pri šestih letih
+              zmeda, ne izziv. */}
+          {op === 'add' && L.allowThree && (
             <button onClick={() => start(3)} style={{ ...bigBtn(C.coral), width: '100%' }}>
               🦀 + 🦀 + 🦀 &nbsp; TRI ŠTEVILKE
             </button>
           )}
         </div>
 
-        {/* Stopnja je spodaj, kjer je palec — in pove, do kod se računa. */}
-        <div style={{ marginTop: 26 }}>
+        {/* Nastavitve so spodaj, kjer je palec. */}
+        <div style={{ marginTop: 24 }}>
+          <p style={{ fontSize: 15, fontWeight: 700, marginBottom: 10, color: INK, opacity: 0.7 }}>KAJ RAČUNAŠ?</p>
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+            {Object.entries(OPS).map(([key, cfg]) => (
+              <button key={key} onClick={() => setOp(key)} style={chip(op === key, cfg.color)}>
+                {cfg.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ marginTop: 20 }}>
           <p style={{ fontSize: 15, fontWeight: 700, marginBottom: 10, color: INK, opacity: 0.7 }}>DO KOD RAČUNAŠ?</p>
           <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
             {Object.entries(LEVELS).map(([key, cfg]) => (
@@ -339,7 +321,7 @@ export default function CrabsAdd({ level, setLevel, onHome }) {
               }}
             >
               <span>
-                {h.nums.join(' + ')} = {h.sum}
+                {formula(h)} = {h.sum}
               </span>
               <span style={{ fontSize: 25 }}>{h.correct ? '✅' : '🐚'}</span>
             </div>
@@ -351,7 +333,7 @@ export default function CrabsAdd({ level, setLevel, onHome }) {
             🔄 ŠE ENA RUNDA
           </button>
           <button onClick={() => setCount(0)} style={{ ...bigBtn('#BDB8E8'), ...homeBtn }}>
-            ⚙️ ZAMENJAJ STOPNJO
+            ⚙️ NASTAVITVE
           </button>
           <button style={{ ...bigBtn('#BDB8E8'), ...homeBtn }} onClick={onHome}>
             🏠 DOMOV
@@ -374,7 +356,7 @@ export default function CrabsAdd({ level, setLevel, onHome }) {
 
       <button
         onClick={readProblem}
-        aria-label={`Poslušaj račun ${problem.nums.join(' plus ')}`}
+        aria-label={`Poslušaj račun ${problem.nums.join(problem.op === 'sub' ? ' minus ' : ' plus ')}`}
         style={{
           fontFamily: "'Fredoka', sans-serif",
           fontSize: 'clamp(26px, 8vw, 42px)',
@@ -388,7 +370,7 @@ export default function CrabsAdd({ level, setLevel, onHome }) {
           padding: '2px 10px'
         }}
       >
-        {problem.nums.join(' + ')} = ? 🔊
+        {formula(problem)} = ? 🔊
       </button>
 
       <Legend level={level} />
@@ -403,12 +385,18 @@ export default function CrabsAdd({ level, setLevel, onHome }) {
           marginBottom: 20
         }}
       >
-        {problem.nums.map((n, i) => (
-          <Fragment key={i}>
-            {i > 0 && <span style={{ fontSize: 30, fontWeight: 700, alignSelf: 'center', color: INK }}>+</span>}
-            <NumberGroup n={n} level={level} color={i % 2 === 0 ? C.shell : C.foam} />
-          </Fragment>
-        ))}
+        {problem.op === 'sub' ? (
+          // Ena skupina, v njej prečrtani odhajajoči predmeti. Otrok prešteje,
+          // kar ostane — to JE odštevanje.
+          <NumberGroup n={problem.nums[0]} gone={problem.nums[1]} level={level} color={C.shell} />
+        ) : (
+          problem.nums.map((n, i) => (
+            <Fragment key={i}>
+              {i > 0 && <span style={{ fontSize: 30, fontWeight: 700, alignSelf: 'center', color: INK }}>+</span>}
+              <NumberGroup n={n} level={level} color={i % 2 === 0 ? C.shell : C.foam} />
+            </Fragment>
+          ))
+        )}
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'center', gap: 10, flexWrap: 'wrap' }}>

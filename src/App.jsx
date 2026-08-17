@@ -8,6 +8,7 @@ import { HEROES } from './content/heroes.js';
 import { MYTH } from './content/myth.js';
 import { DIET_ICON, DIET_SL, NOT_DINO } from './ui/DinoBits.jsx';
 import CrabsAdd from './modes/CrabsAdd.jsx';
+import Commands from './modes/Commands.jsx';
 import { Confetti, Stars } from './ui/Bits.jsx';
 import { sndCorrect, sndRoar, sndWin, unlockAudio } from './lib/audio.js';
 import { GLOBAL_CSS, INK, LEVELS, MODES, STAR_GOAL, bgFor, bigBtn, chip, modeTile } from './lib/styles.js';
@@ -160,6 +161,8 @@ export default function App() {
       {screen === 'myth' && (
         <PickByName {...shared} items={MYTH} question="👆 KDO JE TO?" audioPrefix="myth" accent="#C6892B" />
       )}
+
+      {screen === 'cmd' && <Commands {...shared} />}
 
       {screen === 'trophy' && (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', marginTop: '10vh' }}>

@@ -2,21 +2,23 @@
 
 Igra za učenje branja za 6-letnika (1. razred), narejena za telefon.
 
-Trije načini:
+Osem načinov:
 
 | Način | Kaj dela otrok |
 |---|---|
 | 🖼️ **NAJDI SLIKO** | prebere napisano besedo in pokaže ustrezno sliko |
 | 🔤 **MANJKA ČRKA** | dopolni manjkajočo črko v besedi |
-| 🦖 **DINOZAVER** | prebere ime po zlogih (`TI · RA · NO · ZA · VER`) in izbere pravo žival med štirimi |
-| 🦀 **RAČUNAM** | sešteva do 20, do 100 ali do 1000 — z rakci, vedri in ladjami |
+| 🦖 **DINOZAVRI** | prebere ime po zlogih (`TI · RA · NO · ZA · VER`) in izbere pravo žival med štirimi |
+| 🦀 **RAČUNAM** | sešteva in odšteva do 20, do 100 ali do 1000 — z rakci, vedri in ladjami |
 | 🚗 **AVTOMOBILI** | prebere znamko po zlogih in izbere pravi logotip |
 | 🧚 **JUNAKI** | pravljični in slovenski liki — Kekec, Pehta, Sneguljčica, Ostržek … |
 | ⚡ **BOGOVI** | božanstva in mitološka bitja: grška, nordijska, slovanska |
+| 🤖 **UKAZI** | sestavi zaporedje puščic, ki robota pripelje do cilja |
 
-Rakci imajo svojo rundo petih nalog in svoj zaključni pregled; ostali trije
-načini štejejo do desetih zvezdic. Deset zvezdic da pokal. Tri težavnosti filtrirajo dolžino besed in — pri
-dinozavrih — kako podobne so napačne izbire.
+Rakci imajo svojo rundo petih nalog in svoj zaključni pregled; ostali načini
+štejejo do desetih zvezdic. Deset zvezdic da pokal. Tri težavnosti filtrirajo
+dolžino besed, pri dinozavrih to, kako podobne so napačne izbire, pri računanju
+obseg števil in pri ukazih velikost mreže.
 
 ## Zakaj vedra in ladje
 
@@ -36,6 +38,49 @@ Napačna odgovora sta zato tudi vezana na stopnjo: do 20 se zmotiš za ena do
 tri, do 100 tudi za deset, do 1000 za deset in sto. Napaka pri deseticah je
 prava napaka, ki jo hočemo loviti.
 
+## Zakaj odštevanje nikoli ne zahteva izposojanja
+
+Odštevanje ni narisano kot dve skupini, ampak kot **ena**: prikaže se
+zmanjševanec, zadnji predmeti pa so obledeli in prečrtani. Odštevanje je
+odvzemanje in mora tako tudi izgledati — dve skupini bi risali primerjavo.
+
+Ker gre stran vedno **cel** predmet, mora biti odštevanec po mestih manjši ali
+enak zmanjševancu: `52 − 30` se da narisati (pet veder, tri prečrtaš), `52 − 8`
+pa ne, ne da bi vedro razbil. To je izposojanje — svoja lekcija in ne ta. Zato
+generator odštevanec sestavlja po mestih in v vsakem vzame kvečjemu toliko,
+kolikor ga je tam na voljo. Pravilo se pokaže šele pri redkih žrebih, zato ga
+`npm run check` preveri na 300 računih na stopnjo.
+
+Način **OBOJE** znak izžreba za vsako nalogo posebej: otrok ga mora prebrati in
+ne more le prešteti vsega po navadi.
+
+## Zakaj robot
+
+V načinu UKAZI robot naredi **točno to, kar piše v seznamu** — nič več, nič
+manj. Otrok zloži puščice v trak pod mrežo, trak se bere od leve proti desni kot
+poved, in ob zagonu se izvajana ploščica sveti. Gumb 🔊 trak prebere na glas,
+zato otrok sliši poved, ki jo je sam napisal.
+
+Ko se robot zaleti v skalo, se ustavi in **tista ploščica** dobi rdeč obroč.
+Sporočilo ni »narobe si naredil«, ampak »robot je naredil, kar je pisalo«. Prav
+zato robot in ne dinozaver: krivda gre na seznam, ne na otroka. Iskanje
+napačnega koraka je razhroščevanje in je pri šestih letih dosegljivo.
+
+Ukazi so štiri **absolutne** puščice. Obračanje glede na robota (»obrni levo«)
+zahteva miselno rotacijo, ki je pri tej starosti pogosto še pretrda in bi merila
+njo namesto zaporedja. Težje pomeni večjo mrežo, več skal in daljšo pot:
+
+```
+🟢 4×4, brez skal, 3–5 korakov   🟡 5×5, 3 skale, 5–8   🔴 6×6, 6 skal, 8–12
+```
+
+Plošče so **generirane, ne napisane** — napisanih dvajset stopenj se otrok nauči
+na pamet. BFS naredi dvoje hkrati: jamči, da je plošča rešljiva, in pove, kako
+dolga je najkrajša pot. Brez druge polovice ni zvezdice, ki bi kaj pomenila:
+**zvezdica pade samo pri najkrajšem programu.** Če robot pride do cilja po
+ovinkih, se runda šteje kot rešena, a brez zvezdice — »deluje« in »narejeno je
+dobro« morata ostati ločena.
+
 ## Zakaj zlogi
 
 Ime dinozavra je za začetnika predolgo, da bi ga prebral naenkrat. Zlog ga
@@ -54,17 +99,17 @@ v naslednji zlog samo zadnji soglasnik.** Otrok prebere `SES-TRA` laže kot
 ```bash
 npm install
 npm run dev      # http://localhost:8105
-npm run check    # preveri zloge, slike in besede
+npm run check    # zlogi, slike, besede + 300 računov in 300 plošč na stopnjo
 npm run build
 ```
 
 ## Zgradba
 
 ```
-src/content/   dinos.js (22 živali z zlogi in dejstvi) · words.js (besede)
-src/modes/     trije načini igre
+src/content/   dinos.js · words.js · cars.js · heroes.js · myth.js
+src/modes/     osem načinov igre (PickByName poganja štiri od njih)
 src/ui/        skupni gradniki
-src/lib/       zvok, naključnost, slogi
+src/lib/       zvok, naključnost, slogi, arith.js (računanje), maze.js (uganke)
 public/        slike, posnetki, pisave
 tools/         generator zvočnega paketa, preverjanje vsebine
 ```
@@ -77,11 +122,17 @@ pa je branje in ne sme utihniti.
 
 ```bash
 bash tools/make-voice-pack.sh --dry-run
-bash tools/make-voice-pack.sh          # 73 posnetkov: 22 imen + 51 zlogov
+bash tools/make-voice-pack.sh          # 401 posnetkov
 ```
 
+Od tega 75 imen (dinozavri, znamke, junaki, bogovi) in 129 zlogov. Zlogi so
+**deljeni med paketi** — `RA`, `TO`, `LO` se pojavijo povsod — zato jih skripta
+zbere v množico in vsakega posname enkrat.
+
 Števila (`num.0`–`num.100` in vse desetice do `num.1000`, skupaj 191 posnetkov)
-generira ista skripta. Glas Tina slovenske številke prebere kot **besede**
+generira ista skripta. Poleg njih še `op.plus` / `op.minus` — brez njiju »osem …
+tri« zveni enako za plus in minus — in `cmd.gor` / `cmd.dol` / `cmd.levo` /
+`cmd.desno` za branje traku v načinu UKAZI. Glas Tina slovenske številke prebere kot **besede**
 (»34« → štiriintrideset), zato jih podamo kot števke; sestavljanje iz delov bi
 zaradi slovenske inverzije (štiri-in-trideset) dalo napačen vrstni red.
 

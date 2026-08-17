@@ -396,6 +396,12 @@
     "num.970",
     "num.980",
     "num.990",
-    "num.1000"
+    "num.1000",
+    "op.plus",
+    "op.minus",
+    "cmd.gor",
+    "cmd.dol",
+    "cmd.levo",
+    "cmd.desno"
   ]
 }
