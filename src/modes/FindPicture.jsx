@@ -3,7 +3,7 @@ import { WORDS } from '../content/words.js';
 import { shuffle } from '../lib/rng.js';
 import { sndCorrect, sndWrong } from '../lib/audio.js';
 import { Pic, Word } from '../ui/Bits.jsx';
-import { LEVELS, bigBtn, homeBtn } from '../lib/styles.js';
+import { LEVELS, bigBtn, chip, homeBtn } from '../lib/styles.js';
 
 /** Besede primerne dolžine za stopnjo; nabor razširimo, če je premajhen. */
 function wordsFor(level) {
@@ -20,7 +20,7 @@ function wordsFor(level) {
 }
 
 /** NAJDI SLIKO — napisana beseda (ali dve), otrok pokaže ustrezno sliko. */
-export default function FindPicture({ level, numWords, onStar, onHome, busy }) {
+export default function FindPicture({ level, numWords, setNumWords, onStar, onHome, busy }) {
   const [round, setRound] = useState(null);
   const [shakeIdx, setShakeIdx] = useState(-1);
 
@@ -97,6 +97,16 @@ export default function FindPicture({ level, numWords, onStar, onHome, busy }) {
             </button>
           );
         })}
+      </div>
+
+      {/* Izbira ena/dve besedi sodi SEM, ne na domači zaslon: velja samo za ta
+          način, drugod pa je bila le smeti. */}
+      <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+        {[1, 2].map((n) => (
+          <button key={n} onClick={() => setNumWords(n)} style={chip(numWords === n, '#6C63FF')}>
+            {n === 1 ? '1 BESEDA' : '2 BESEDI'}
+          </button>
+        ))}
       </div>
 
       <button style={{ ...bigBtn('#BDB8E8'), ...homeBtn }} onClick={onHome}>

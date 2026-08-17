@@ -1,38 +1,50 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { DINOS } from '../content/dinos.js';
 import { pick, pickDistractors, shuffle } from '../lib/rng.js';
 import { say, saySyllables, sndRoar, sndTap, sndWrong } from '../lib/audio.js';
-import { SyllableWord, FactCard } from '../ui/DinoBits.jsx';
+import { SyllableWord, FactCard } from '../ui/NameBits.jsx';
 import { INK, bigBtn, homeBtn } from '../lib/styles.js';
 
 /** Koliko zlogov sme imeti ime na posamezni stopnji. */
-const SYL_RANGE = { easy: [3, 4], mid: [3, 5], hard: [4, 9] };
+const SYL_RANGE = { easy: [1, 3], mid: [2, 5], hard: [3, 9] };
 
-function poolFor(level) {
-  const [lo, hi] = SYL_RANGE[level];
-  const p = DINOS.filter((d) => d.syl.length >= lo && d.syl.length <= hi);
-  return p.length >= 4 ? p : DINOS;
+function poolFor(items, level) {
+  const [lo, hi] = SYL_RANGE[level] || SYL_RANGE.mid;
+  const chunks = (it) => it.syl.filter((s) => s.trim() !== '').length;
+  const p = items.filter((it) => chunks(it) >= lo && chunks(it) <= hi);
+  return p.length >= 4 ? p : items;
 }
 
 /**
- * DINOZAVER — ime po zlogih, otrok izbere pravo sliko med štirimi.
+ * Beri ime po zlogih in izberi pravo sliko med štirimi.
  *
- * Zloge je mogoče tapniti (vsak se izgovori) in celo ime prav tako. To je
- * bralna opora: otrok, ki zlogov še ne zna povezati, jih lahko sliši, a mora
+ * Ista mehanika poganja dinozavre, znamke avtomobilov, junake in mitologijo —
+ * zamenja se samo vsebina. Zloge je mogoče tapniti (vsak se izgovori) in celo
+ * ime prav tako: otrok, ki zlogov še ne zna povezati, jih lahko sliši, a mora
  * sliko izbrati sam.
  */
-export default function DinoSyllables({ level, onStar, onHome, busy }) {
+export default function PickByName({
+  items,
+  question,
+  audioPrefix,
+  chipsFor,
+  noteFor,
+  accent = '#3FA05A',
+  level,
+  onStar,
+  onHome,
+  busy
+}) {
   const [round, setRound] = useState(null);
   const [shakeId, setShakeId] = useState(null);
   const [won, setWon] = useState(null);
   const cancelRef = useRef(null);
 
   const newRound = useCallback(() => {
-    const target = pick(poolFor(level));
-    const wrong = pickDistractors(target, DINOS, 3, level);
+    const target = pick(poolFor(items, level));
+    const wrong = pickDistractors(target, items, 3, level);
     setRound({ target, cards: shuffle([target, ...wrong]) });
     setWon(null);
-  }, [level]);
+  }, [items, level]);
 
   useEffect(() => {
     newRound();
@@ -43,30 +55,33 @@ export default function DinoSyllables({ level, onStar, onHome, busy }) {
 
   if (!round) return null;
 
+  const keyFor = (it) => `${audioPrefix}.${it.id}`;
+
   const readWholeName = () => {
     cancelRef.current?.();
     sndTap();
-    cancelRef.current = saySyllables(round.target.syl, { thenKey: `dino.${round.target.id}` });
+    cancelRef.current = saySyllables(
+      round.target.syl.filter((s) => s.trim() !== ''),
+      { thenKey: keyFor(round.target) }
+    );
   };
 
-  const tap = (dino) => {
+  const tap = (it) => {
     if (busy || won) return;
-    if (dino.id === round.target.id) {
+    if (it.id === round.target.id) {
       cancelRef.current?.();
       sndRoar();
-      setWon(dino);
+      setWon(it);
     } else {
       sndWrong();
-      setShakeId(dino.id);
+      setShakeId(it.id);
       setTimeout(() => setShakeId(null), 500);
     }
   };
 
   return (
     <div style={{ width: '100%', maxWidth: '460px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px' }}>
-      <div style={{ fontWeight: 700, fontSize: 'clamp(15px,4vw,20px)', color: '#4A4468', letterSpacing: '1px' }}>
-        👆 KATERA ŽIVAL JE TO?
-      </div>
+      <div style={{ fontWeight: 700, fontSize: 'clamp(15px,4vw,20px)', color: '#4A4468', letterSpacing: '1px' }}>{question}</div>
 
       <SyllableWord
         syl={round.target.syl}
@@ -95,11 +110,11 @@ export default function DinoSyllables({ level, onStar, onHome, busy }) {
       </button>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '12px', width: '100%', marginTop: '2px' }}>
-        {round.cards.map((d) => (
+        {round.cards.map((it) => (
           <button
-            key={d.id}
-            onClick={() => tap(d)}
-            aria-label={d.name}
+            key={it.id}
+            onClick={() => tap(it)}
+            aria-label={it.name}
             style={{
               background: '#fff',
               border: '4px solid #E8E4F5',
@@ -111,11 +126,11 @@ export default function DinoSyllables({ level, onStar, onHome, busy }) {
               alignItems: 'center',
               justifyContent: 'center',
               minHeight: 'clamp(96px,26vw,140px)',
-              animation: shakeId === d.id ? 'shake 0.4s ease' : 'none'
+              animation: shakeId === it.id ? 'shake 0.4s ease' : 'none'
             }}
           >
             <img
-              src={`${import.meta.env.BASE_URL}${d.img}`}
+              src={`${import.meta.env.BASE_URL}${it.img}`}
               alt=""
               draggable={false}
               style={{ width: '100%', height: '100%', maxHeight: '20vh', objectFit: 'contain', borderRadius: '12px' }}
@@ -130,7 +145,11 @@ export default function DinoSyllables({ level, onStar, onHome, busy }) {
 
       {won && (
         <FactCard
-          dino={won}
+          item={won}
+          audioKey={keyFor(won)}
+          chips={chipsFor ? chipsFor(won) : []}
+          note={noteFor ? noteFor(won) : null}
+          accent={accent}
           onNext={() => {
             setWon(null);
             onStar(newRound);

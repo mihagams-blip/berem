@@ -48,10 +48,17 @@ function playTone(freqs, dur = 0.15, type = 'sine', gap = 0.09) {
   }
 }
 
+/**
+ * Zvočni znaki morajo biti nedvoumni: otrok se uči, kaj pomenita.
+ *
+ * Prej je bil `sndRoar` padajoča žaga (110→78 Hz) — po pravilnem odgovoru je
+ * zvenel kot napaka in otroka zmedel. Zdaj vsi pritrdilni zvoki RASTEJO, edini
+ * padajoč pa je »poskusi znova«, in ta je mehak, ne oster.
+ */
 export const sndCorrect = () => playTone([523, 659, 784, 1047], 0.22, 'triangle');
-export const sndWrong = () => playTone([180], 0.25, 'square');
-export const sndRoar = () => playTone([110, 92, 78], 0.4, 'sawtooth', 0.15);
+export const sndRoar = () => playTone([196, 262, 330, 392, 523], 0.26, 'triangle', 0.085);
 export const sndWin = () => playTone([523, 659, 784, 1047, 1319, 1568], 0.3, 'triangle', 0.12);
+export const sndWrong = () => playTone([330, 262], 0.18, 'sine', 0.13);
 export const sndTap = () => playTone([660], 0.06, 'sine');
 
 /* ── Govor ─────────────────────────────────────────────────────────────── */

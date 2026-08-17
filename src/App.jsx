@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import FindPicture from './modes/FindPicture.jsx';
 import MissingLetter from './modes/MissingLetter.jsx';
-import DinoSyllables from './modes/DinoSyllables.jsx';
+import PickByName from './modes/PickByName.jsx';
+import { DINOS } from './content/dinos.js';
+import { DIET_ICON, DIET_SL, NOT_DINO } from './ui/DinoBits.jsx';
 import CrabsAdd from './modes/CrabsAdd.jsx';
 import { Confetti, Stars } from './ui/Bits.jsx';
 import { sndCorrect, sndRoar, sndWin, unlockAudio } from './lib/audio.js';
@@ -105,20 +107,26 @@ export default function App() {
                 </button>
               ))}
             </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              {[1, 2].map((n) => (
-                <button key={n} onClick={() => setNumWords(n)} style={chip(numWords === n, '#6C63FF')}>
-                  {n === 1 ? '1 BESEDA' : '2 BESEDI'}
-                </button>
-              ))}
-            </div>
+
           </div>
         </div>
       )}
 
-      {screen === 'pics' && <FindPicture {...shared} numWords={numWords} />}
+      {screen === 'pics' && <FindPicture {...shared} numWords={numWords} setNumWords={setNumWords} />}
       {screen === 'letter' && <MissingLetter {...shared} />}
-      {screen === 'dino' && <DinoSyllables {...shared} />}
+      {screen === 'dino' && (
+        <PickByName
+          {...shared}
+          items={DINOS}
+          question="👆 KATERA ŽIVAL JE TO?"
+          audioPrefix="dino"
+          chipsFor={(d) => [
+            { icon: DIET_ICON[d.diet], text: DIET_SL[d.diet] },
+            { icon: '📏', text: `${String(d.lengthM).replace('.', ',')} m` }
+          ]}
+          noteFor={(d) => NOT_DINO[d.shape] || null}
+        />
+      )}
       {/* Rakci imajo svojo rundo petih nalog in svoj pregled, zato ne uporabljajo
           skupnega traku zvezdic ne skupne pohvale. */}
       {screen === 'crabs' && <CrabsAdd level={level} setLevel={setLevel} onHome={goHome} />}
