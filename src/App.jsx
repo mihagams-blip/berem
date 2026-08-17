@@ -9,6 +9,7 @@ import { MYTH } from './content/myth.js';
 import { DIET_ICON, DIET_SL, NOT_DINO } from './ui/DinoBits.jsx';
 import CrabsAdd from './modes/CrabsAdd.jsx';
 import Commands from './modes/Commands.jsx';
+import Patterns from './modes/Patterns.jsx';
 import { Confetti, Stars } from './ui/Bits.jsx';
 import { sndCorrect, sndRoar, sndWin, unlockAudio } from './lib/audio.js';
 import { GLOBAL_CSS, INK, LEVELS, MODES, STAR_GOAL, bgFor, bigBtn, chip, modeTile } from './lib/styles.js';
@@ -97,9 +98,15 @@ export default function App() {
             BEREM
           </div>
 
+          {/* Pri lihem številu načinov zadnja ploščica zasede obe koloni, sicer
+              bi zadnja vrstica ostala napol prazna in bi izpadlo kot napaka. */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '12px', width: '100%' }}>
-            {Object.entries(MODES).map(([key, m]) => (
-              <button key={key} style={modeTile(m.color)} onClick={() => start(key)}>
+            {Object.entries(MODES).map(([key, m], i, all) => (
+              <button
+                key={key}
+                style={{ ...modeTile(m.color), ...(all.length % 2 === 1 && i === all.length - 1 ? { gridColumn: '1 / -1' } : null) }}
+                onClick={() => start(key)}
+              >
                 <span style={{ fontSize: 'clamp(28px,8vw,36px)' }}>{m.icon}</span>
                 <span style={{ fontSize: 'clamp(13px,3.7vw,16px)', letterSpacing: '0.5px' }}>{m.label}</span>
               </button>
@@ -163,6 +170,8 @@ export default function App() {
       )}
 
       {screen === 'cmd' && <Commands {...shared} />}
+
+      {screen === 'patterns' && <Patterns {...shared} />}
 
       {screen === 'trophy' && (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', marginTop: '10vh' }}>

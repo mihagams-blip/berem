@@ -2,7 +2,7 @@
 
 Igra za učenje branja za 6-letnika (1. razred), narejena za telefon.
 
-Osem načinov:
+Devet načinov:
 
 | Način | Kaj dela otrok |
 |---|---|
@@ -14,11 +14,12 @@ Osem načinov:
 | 🧚 **JUNAKI** | pravljični in slovenski liki — Kekec, Pehta, Sneguljčica, Ostržek … |
 | ⚡ **BOGOVI** | božanstva in mitološka bitja: grška, nordijska, slovanska |
 | 🤖 **UKAZI** | sestavi zaporedje puščic, ki robota pripelje do cilja |
+| 🔴🔵 **VZORCI** | najde pravilo v traku simbolov in dopolni prazno mesto |
 
 Rakci imajo svojo rundo petih nalog in svoj zaključni pregled; ostali načini
 štejejo do desetih zvezdic. Deset zvezdic da pokal. Tri težavnosti filtrirajo
 dolžino besed, pri dinozavrih to, kako podobne so napačne izbire, pri računanju
-obseg števil in pri ukazih velikost mreže.
+obseg števil, pri ukazih velikost mreže in pri vzorcih dolžino enote.
 
 ## Zakaj vedra in ladje
 
@@ -81,6 +82,30 @@ dolga je najkrajša pot. Brez druge polovice ni zvezdice, ki bi kaj pomenila:
 ovinkih, se runda šteje kot rešena, a brez zvezdice — »deluje« in »narejeno je
 dobro« morata ostati ločena.
 
+## Zakaj se vzorec tudi sliši
+
+VZORCI so predalgebra: otrok ne išče odgovora, ampak **pravilo**, in ga potem
+uporabi. Trak simbolov ima eno prazno mesto; kaj vanj sodi?
+
+Vzorec ni izbran s seznama, ampak generiran. Enota se ponavlja v neskončno
+zaporedje `p(i) = enota[i mod dolžina]`, iz njega izrežemo vidni del in eno mesto
+skrijemo. Dolžina traku je naključna — če bi ga vedno odrezali na meji enote, bi
+bil odgovor vedno prvi element enote in tega bi se otrok naučil prej kot vzorca.
+
+Pred režo mora ostati vsaj ena cela enota. Iz tega sledi lastnost, ki jo igra
+potrebuje: **pravilni simbol se v traku pojavi tudi drugje.** Sicer bi otrok
+izbral »tistega, ki ga še ni«, in bi imel prav, ne da bi vzorec pogledal.
+`npm run check` to preveri na 400 nalogah na stopnjo.
+
+Vsak simbol ima **svoj ton** iz pentatonike, zato se vzorec ne le vidi, ampak
+tudi sliši: `ABAB` je do-mi-do-mi. Kdor pravila ne vidi, ga lahko ujame po sluhu
+— in to je hkrati dostopnost, ker sta 🔴 in 🟢 barvno slepemu otroku neločljiva,
+njuna tona pa ne.
+
+Namig se pokaže šele po **drugem** zgrešenem poskusu in ne pove odgovora: med
+ploščicami se odprejo reže, ki trak razdelijo na enote ponavljanja. To je ravno
+tisto, česar se otrok uči, zato je namig lekcija in ne bližnjica.
+
 ## Zakaj zlogi
 
 Ime dinozavra je za začetnika predolgo, da bi ga prebral naenkrat. Zlog ga
@@ -99,7 +124,7 @@ v naslednji zlog samo zadnji soglasnik.** Otrok prebere `SES-TRA` laže kot
 ```bash
 npm install
 npm run dev      # http://localhost:8105
-npm run check    # zlogi, slike, besede + 300 računov in 300 plošč na stopnjo
+npm run check    # zlogi, slike, besede + računi, uganke, vzorci in govor
 npm run build
 ```
 
@@ -107,16 +132,18 @@ npm run build
 
 ```
 src/content/   dinos.js · words.js · cars.js · heroes.js · myth.js
-src/modes/     osem načinov igre (PickByName poganja štiri od njih)
+src/modes/     devet načinov igre (PickByName poganja štiri od njih)
 src/ui/        skupni gradniki
-src/lib/       zvok, naključnost, slogi, arith.js (računanje), maze.js (uganke)
+src/lib/       zvok, naključnost, slogi + čista logika, ki jo preveri `npm run
+               check`: arith.js (računanje), maze.js (uganke), patterns.js (vzorci)
 public/        slike, posnetki, pisave
 tools/         generator zvočnega paketa, preverjanje vsebine
 ```
 
 ## Zvok
 
-Zvočni učinki so proceduralni (WebAudio, brez datotek). Govor so **posnetki**,
+Zvočni učinki so proceduralni (WebAudio, brez datotek) — tudi toni vzorcev, zato
+je VZORCI edini način, ki govornega paketa ne potrebuje. Govor so **posnetki**,
 ne sinteza v brskalniku — na telefonu slovenskega glasu pogosto ni, jedro igre
 pa je branje in ne sme utihniti.
 

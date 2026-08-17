@@ -10,6 +10,7 @@ import { DINOS, SYLLABLES } from '../src/content/dinos.js';
 import { WORDS } from '../src/content/words.js';
 import { LEVELS, makeProblem, toUnits } from '../src/lib/arith.js';
 import { GRIDS, distances, makeMaze, runProgram } from '../src/lib/maze.js';
+import { LEVELS as PAT_LEVELS, makePattern } from '../src/lib/patterns.js';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -102,6 +103,34 @@ for (const lv of Object.keys(GRIDS)) {
   }
 }
 console.log(`Uganke UKAZI: ${ROUNDS} plošč na stopnjo, vse rešljive in z znano optimalno potjo.`);
+
+/* ── Vzorci: naloga ne sme biti rešljiva brez branja vzorca ──────────────────
+ *
+ * Najlažje se to podre tako, da se pravilni simbol v traku ne pojavi nikjer
+ * drugje — takrat otrok izbere »tistega, ki ga še ni«, in ima prav, ne da bi
+ * vzorec sploh pogledal. Enako škodljivo bi bilo, če bi se dva različna simbola
+ * zlila v isti ton: `ABAB` bi zvenel kot `AAAA`, torej ravno narobe.
+ */
+for (const lv of Object.keys(PAT_LEVELS)) {
+  const L = PAT_LEVELS[lv];
+  for (let i = 0; i < 400; i++) {
+    const p = makePattern(lv);
+    const strip = p.tiles.map((t, j) => (j === p.holeIdx ? '␣' : t)).join('');
+
+    if (p.tiles[p.holeIdx] !== p.answer) fail(`vzorci ${lv}: odgovor se ne ujema z ${strip}`);
+    if (!p.tiles.some((t, j) => j !== p.holeIdx && t === p.answer))
+      fail(`vzorci ${lv}: odgovor "${p.answer}" se v traku ne pojavi drugje — ${strip}`);
+    if (p.options.filter((o) => o === p.answer).length !== 1) fail(`vzorci ${lv}: odgovora ni natanko enkrat med možnostmi`);
+    if (new Set(p.options).size !== L.opts) fail(`vzorci ${lv}: možnosti niso ${L.opts} različnih`);
+    if (p.holeIdx < p.unitLen) fail(`vzorci ${lv}: pred režo ni cele enote — ${strip}`);
+    if (L.hole === 'end' && p.holeIdx !== p.tiles.length - 1) fail(`vzorci ${lv}: reža ni na koncu`);
+    if (L.hole === 'inside' && (p.holeIdx === 0 || p.holeIdx === p.tiles.length - 1))
+      fail(`vzorci ${lv}: reža ni v sredini`);
+    const notes = Object.values(p.note);
+    if (new Set(notes).size !== notes.length) fail(`vzorci ${lv}: dva simbola imata isti ton`);
+  }
+}
+console.log('Vzorci: 400 nalog na stopnjo, nobene rešljive brez branja vzorca.');
 
 /* ── Govor: vsak ključ v manifestu mora imeti svojo datoteko ─────────────────
  *

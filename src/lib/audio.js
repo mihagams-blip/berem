@@ -61,6 +61,14 @@ export const sndWin = () => playTone([523, 659, 784, 1047, 1319, 1568], 0.3, 'tr
 export const sndWrong = () => playTone([330, 262], 0.18, 'sine', 0.13);
 export const sndTap = () => playTone([660], 0.06, 'sine');
 
+/**
+ * Ton za simbol v načinu VZORCI — pentatonika, da vsaka kombinacija zveni
+ * ubrano. Vzorec se tako ne le vidi, ampak tudi sliši: `ABAB` je do-mi-do-mi.
+ * Otrok, ki pravila ne vidi, ga lahko ujame po sluhu.
+ */
+const PENTA = [523, 587, 659, 784, 880];
+export const sndNote = (i) => playTone([PENTA[i % PENTA.length]], 0.2, 'triangle');
+
 /* ── Govor ─────────────────────────────────────────────────────────────── */
 
 /**
