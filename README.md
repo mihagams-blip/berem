@@ -10,6 +10,9 @@ Trije načini:
 | 🔤 **MANJKA ČRKA** | dopolni manjkajočo črko v besedi |
 | 🦖 **DINOZAVER** | prebere ime po zlogih (`TI · RA · NO · ZA · VER`) in izbere pravo žival med štirimi |
 | 🦀 **RAČUNAM** | sešteva do 20, do 100 ali do 1000 — z rakci, vedri in ladjami |
+| 🚗 **AVTOMOBILI** | prebere znamko po zlogih in izbere pravi logotip |
+| 🧚 **JUNAKI** | pravljični in slovenski liki — Kekec, Pehta, Sneguljčica, Ostržek … |
+| ⚡ **BOGOVI** | božanstva in mitološka bitja: grška, nordijska, slovanska |
 
 Rakci imajo svojo rundo petih nalog in svoj zaključni pregled; ostali trije
 načini štejejo do desetih zvezdic. Deset zvezdic da pokal. Tri težavnosti filtrirajo dolžino besed in — pri
@@ -84,6 +87,19 @@ zaradi slovenske inverzije (štiri-in-trideset) dalo napačen vrstni red.
 
 Potrebuje macOS z glasom **Tina** (sl_SI). ffmpeg ni potreben — rez tišine in
 izenačitev glasnosti opravi `tools/trim-audio.py`, zapis pa vgrajeni `afconvert`.
+
+## Pravice na likih
+
+Junaki so **samo iz javne lasti** — ljudske in klasične pravljice ter slovensko
+izročilo. Marvel, DC in Disney niso vključeni: repozitorij je javen, in tudi
+generirana slika zaščitenega lika bi bila kršitev. Pri klasikah, ki jih je
+Disney upodobil (Sneguljčica, Pepelka, Ostržek), so slike narejene po **ljudski
+predlogi**, ne po filmski upodobitvi.
+
+Logotipi avtomobilov so blagovne znamke svojih lastnikov, uporabljeni v
+nekomercialni otroški igri za prepoznavanje. Vir je Wikimedia Commons.
+
+Slike, ki niso v javni lasti, so navedene v [public/img/CREDITS.md](public/img/CREDITS.md).
 
 ## Sredstva
 
