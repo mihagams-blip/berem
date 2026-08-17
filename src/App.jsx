@@ -3,11 +3,14 @@ import FindPicture from './modes/FindPicture.jsx';
 import MissingLetter from './modes/MissingLetter.jsx';
 import PickByName from './modes/PickByName.jsx';
 import { DINOS } from './content/dinos.js';
+import { CARS } from './content/cars.js';
+import { HEROES } from './content/heroes.js';
+import { MYTH } from './content/myth.js';
 import { DIET_ICON, DIET_SL, NOT_DINO } from './ui/DinoBits.jsx';
 import CrabsAdd from './modes/CrabsAdd.jsx';
 import { Confetti, Stars } from './ui/Bits.jsx';
 import { sndCorrect, sndRoar, sndWin, unlockAudio } from './lib/audio.js';
-import { GLOBAL_CSS, INK, LEVELS, MODES, STAR_GOAL, bgFor, bigBtn, chip } from './lib/styles.js';
+import { GLOBAL_CSS, INK, LEVELS, MODES, STAR_GOAL, bgFor, bigBtn, chip, modeTile } from './lib/styles.js';
 
 export default function App() {
   const [screen, setScreen] = useState('home'); // home | pics | letter | dino | trophy
@@ -93,11 +96,14 @@ export default function App() {
             BEREM
           </div>
 
-          {Object.entries(MODES).map(([key, m]) => (
-            <button key={key} style={{ ...bigBtn(m.color), width: '100%', marginBottom: '14px' }} onClick={() => start(key)}>
-              {m.label}
-            </button>
-          ))}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '12px', width: '100%' }}>
+            {Object.entries(MODES).map(([key, m]) => (
+              <button key={key} style={modeTile(m.color)} onClick={() => start(key)}>
+                <span style={{ fontSize: 'clamp(28px,8vw,36px)' }}>{m.icon}</span>
+                <span style={{ fontSize: 'clamp(13px,3.7vw,16px)', letterSpacing: '0.5px' }}>{m.label}</span>
+              </button>
+            ))}
+          </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center', marginTop: '3vh' }}>
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -130,6 +136,30 @@ export default function App() {
       {/* Rakci imajo svojo rundo petih nalog in svoj pregled, zato ne uporabljajo
           skupnega traku zvezdic ne skupne pohvale. */}
       {screen === 'crabs' && <CrabsAdd level={level} setLevel={setLevel} onHome={goHome} />}
+
+      {screen === 'cars' && (
+        <PickByName
+          {...shared}
+          items={CARS}
+          question="👆 KATERA ZNAMKA JE TO?"
+          audioPrefix="car"
+          accent="#3B6FD4"
+        />
+      )}
+
+      {screen === 'heroes' && (
+        <PickByName
+          {...shared}
+          items={HEROES}
+          question="👆 KATERI JUNAK JE TO?"
+          audioPrefix="hero"
+          accent="#B0559E"
+        />
+      )}
+
+      {screen === 'myth' && (
+        <PickByName {...shared} items={MYTH} question="👆 KDO JE TO?" audioPrefix="myth" accent="#C6892B" />
+      )}
 
       {screen === 'trophy' && (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', marginTop: '10vh' }}>

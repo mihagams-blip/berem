@@ -5,9 +5,10 @@
 #   bash tools/make-voice-pack.sh            # zgeneriraj
 #   bash tools/make-voice-pack.sh --dry-run  # samo izpiši, kaj bi naredil
 #
-# Kaj zgenerira (ključe prebere iz src/content/dinos.js, da se ne razideta):
-#   dino.<id>   ime dinozavra
-#   syl.<zlog>  posamezen zlog — otrok ga sliši, ko ga tapne
+# Kaj zgenerira (ključe prebere iz src/content/*.js, da se ne razideta):
+#   dino.<id> car.<id> hero.<id> myth.<id>   ime
+#   syl.<zlog>                              posamezen zlog (deljen med paketi)
+#   num.<n>                                 števila za način RAČUNAM
 #
 # Ime datoteke = ključ, kjer je vsak ne-alfanumerični znak zamenjan z '-'
 # (ISTA pretvorba je v src/lib/audio.js → slug()).
@@ -54,9 +55,26 @@ LIST="$(mktemp)"
 trap 'rm -f "$LIST"' EXIT
 
 node --input-type=module -e '
-  const m = await import("'"${ROOT}"'/src/content/dinos.js");
-  for (const d of m.DINOS) process.stdout.write(`dino.${d.id}\t165\t${d.name}\n`);
-  for (const s of m.SYLLABLES) process.stdout.write(`syl.${s}\t140\t${s}\n`);
+  const ROOT = "'"${ROOT}"'";
+  const syllables = new Set();
+
+  /** Vsak vsebinski paket da imena in zloge. Manjkajoča datoteka se preskoči. */
+  async function pack(file, exportName, prefix) {
+    let m;
+    try { m = await import(`${ROOT}/src/content/${file}`); } catch { return; }
+    for (const it of m[exportName] || []) {
+      process.stdout.write(`${prefix}.${it.id}\t165\t${it.name}\n`);
+      for (const s of it.syl) if (s.trim() !== "") syllables.add(s);
+    }
+  }
+  await pack("dinos.js", "DINOS", "dino");
+  await pack("cars.js", "CARS", "car");
+  await pack("heroes.js", "HEROES", "hero");
+  await pack("myth.js", "MYTH", "myth");
+
+  // Zlogi so DELJENI med paketi (RA, TO, LO … se ponovijo), zato jih zberemo
+  // skupaj in vsakega posnamemo enkrat.
+  for (const s of [...syllables].sort()) process.stdout.write(`syl.${s}\t140\t${s}\n`);
 
   // Števila za način RAČUNAM. Glas Tina slovenske številke prebere kot BESEDE
   // ("34" → štiriintrideset), zato jih podamo kot števke in se izognemo

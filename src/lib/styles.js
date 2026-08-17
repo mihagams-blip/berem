@@ -9,11 +9,15 @@ export const LEVELS = {
   hard: { dot: '🔴', label: 'TEŽKO', min: 6, max: 12, cards: 8, opts: 8, color: '#E85454' }
 };
 
+/** Sedem načinov je preveč za stolpec gumbov, zato so ploščice v mreži 2×n. */
 export const MODES = {
-  pics: { label: '🖼️ NAJDI SLIKO', color: '#FF5D5D' },
-  letter: { label: '🔤 MANJKA ČRKA', color: '#2EC4B6' },
-  dino: { label: '🦖 DINOZAVER', color: '#3FA05A' },
-  crabs: { label: '🦀 RAČUNAM', color: '#0E7C86' }
+  pics: { icon: '🖼️', label: 'NAJDI SLIKO', color: '#FF5D5D' },
+  letter: { icon: '🔤', label: 'MANJKA ČRKA', color: '#2EC4B6' },
+  crabs: { icon: '🦀', label: 'RAČUNAM', color: '#0E7C86' },
+  dino: { icon: '🦖', label: 'DINOZAVRI', color: '#3FA05A' },
+  cars: { icon: '🚗', label: 'AVTOMOBILI', color: '#3B6FD4' },
+  heroes: { icon: '🧚', label: 'JUNAKI', color: '#B0559E' },
+  myth: { icon: '⚡', label: 'BOGOVI', color: '#C6892B' }
 };
 
 export const bigBtn = (bg) => ({
@@ -46,10 +50,33 @@ export const chip = (active, color) => ({
 
 export const homeBtn = { padding: '10px 20px', fontSize: '16px' };
 
+/** Ploščica načina na domačem zaslonu. */
+export const modeTile = (bg) => ({
+  fontFamily: "'Fredoka', sans-serif",
+  fontWeight: 700,
+  background: bg,
+  color: '#fff',
+  border: 'none',
+  borderRadius: '20px',
+  boxShadow: '0 5px 0 rgba(0,0,0,0.2)',
+  cursor: 'pointer',
+  padding: '16px 8px 14px',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: '6px',
+  minHeight: '96px',
+  justifyContent: 'center',
+  lineHeight: 1.1
+});
+
 /** Ozadje se spremeni po načinu, da otrok takoj ve, kje je. */
 export const bgFor = (mode) => {
   if (mode === 'dino') return 'linear-gradient(180deg,#B8E6C8 0%,#DCF2D0 60%,#F5EBC8 100%)';
   if (mode === 'crabs') return 'linear-gradient(180deg,#FBEFD9 0%,#F3DFBB 100%)';
+  if (mode === 'cars') return 'linear-gradient(180deg,#D6E4FA 0%,#EDF3FC 70%,#FFF6C9 100%)';
+  if (mode === 'heroes') return 'linear-gradient(180deg,#F2DDF0 0%,#F7E9F5 70%,#FFF6C9 100%)';
+  if (mode === 'myth') return 'linear-gradient(180deg,#F6E4C2 0%,#FBF0DA 70%,#EFE7F7 100%)';
   return 'linear-gradient(180deg,#8FD3FF 0%,#C9F2E5 70%,#FFF6C9 100%)';
 };
 
