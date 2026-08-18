@@ -6,8 +6,17 @@
       name="viewport"
       content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
     />
+    <!-- Namizna aplikacija (PWA). Na iPhonu je ključna `apple-touch-icon`: brez
+         nje iOS na namizje postavi kar posnetek strani. Manifest sam za ikono na
+         iOS ne zadošča, na Androidu pa je obratno — zato oboje. -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="BEREM" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="theme-color" content="#8FD3FF" />
+    <link rel="apple-touch-icon" href="./icons/icon-180.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
+    <link rel="manifest" href="./manifest.webmanifest" />
     <title>BEREM</title>
     <link rel="preload" as="font" type="font/woff2" href="./fonts/fredoka-var-latin.woff2" crossorigin />
     <style>

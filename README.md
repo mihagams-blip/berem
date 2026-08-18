@@ -140,6 +140,29 @@ public/        slike, posnetki, pisave
 tools/         generator zvočnega paketa, preverjanje vsebine
 ```
 
+## Na namizje kot aplikacija
+
+Na iPhonu: **Safari** → Deli → *Na začetni zaslon*. Odpre se brez naslovne
+vrstice, pokončno, z lastno ikono. Na Androidu ponudi Chrome namestitev sam.
+
+Na iOS je ključna `apple-touch-icon` 180×180 — brez nje iOS na namizje postavi
+kar posnetek strani in izgleda kot zaznamek, ne kot igra. Manifest sam za ikono
+na iOS ne zadošča, na Androidu pa je obratno, zato je v `index.html` oboje.
+Ikone dela `python3 tools/make-icons.py` iz sistemskega emojija 📖 na istem
+prelivu kot domači zaslon; Apple Color Emoji ima eno samo bitno različico, pri
+velikosti 160, zato se vse ostale velikosti izpeljejo iz nje.
+
+`public/sw.js` poskrbi, da igra teče **brez omrežja**. Namenoma nima
+vnaprejšnjega seznama datotek: v prejšnjem projektu je bil ročno vzdrževan
+seznam vir napak, ker manjkajoča datoteka odpove tiho. Shrani se tisto, kar je
+otrok res odprl — po prvi igri je predpomnjeno vse potrebno, prvi obisk pa ne
+povleče štirih megabajtov zvoka vnaprej. Ogrodje in seznam posnetkov gresta
+najprej na omrežje, da nova objava pride do otroka; odgovori, ki niso v redu, se
+ne shranijo.
+
+`npm run check` preveri, da ikone obstajajo in da se njihove velikosti ujemajo z
+zapisanimi — oboje odpove tiho, zato ju na oko ni mogoče ujeti.
+
 ## Zvok
 
 Zvočni učinki so proceduralni (WebAudio, brez datotek) — tudi toni vzorcev, zato

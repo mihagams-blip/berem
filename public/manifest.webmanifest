@@ -1,0 +1,17 @@
+{
+  "name": "BEREM — igra branja",
+  "short_name": "BEREM",
+  "lang": "sl",
+  "description": "Igra za učenje branja, računanja in vzorcev za prvošolca.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#8FD3FF",
+  "theme_color": "#8FD3FF",
+  "icons": [
+    { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

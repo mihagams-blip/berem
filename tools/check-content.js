@@ -132,6 +132,44 @@ for (const lv of Object.keys(PAT_LEVELS)) {
 }
 console.log('Vzorci: 400 nalog na stopnjo, nobene rešljive brez branja vzorca.');
 
+/* ── Namizna aplikacija: ikone morajo obstajati in biti prave velikosti ──────
+ *
+ * Manjkajoča `apple-touch-icon` ne javi ničesar — iOS preprosto postavi na
+ * namizje posnetek strani in izgleda kot zaznamek in ne kot igra. Napačna
+ * velikost je enako tiha, zato jo preberemo iz same datoteke (PNG nosi širino
+ * in višino v glavi IHDR, takoj za osembajtnim podpisom).
+ */
+const pngSize = (file) => {
+  const b = readFileSync(file);
+  if (b.length < 24 || b.readUInt32BE(0) !== 0x89504e47) return null;
+  return [b.readUInt32BE(16), b.readUInt32BE(20)];
+};
+
+const html = readFileSync(join(root, 'index.html'), 'utf8');
+for (const rel of [...html.matchAll(/(?:apple-touch-icon|rel="manifest"|rel="icon")[^>]*href="\.\/([^"]+)"/g)].map((m) => m[1])) {
+  if (!existsSync(join(root, 'public', rel))) fail(`namizje: index.html kaže na public/${rel}, ki je ni`);
+}
+if (!/apple-touch-icon/.test(html)) fail('namizje: manjka <link rel="apple-touch-icon"> — iOS bi dal na namizje posnetek strani');
+
+const webmanifest = join(root, 'public', 'manifest.webmanifest');
+if (!existsSync(webmanifest)) fail('namizje: manjka public/manifest.webmanifest');
+else {
+  const mf = JSON.parse(readFileSync(webmanifest, 'utf8'));
+  if (mf.display !== 'standalone') fail('namizje: display ni "standalone", igra bi se odprla v brskalniku');
+  if (!mf.icons?.some((i) => i.purpose === 'maskable')) fail('namizje: manjka maskirana ikona za Android');
+  for (const icon of mf.icons || []) {
+    const f = join(root, 'public', icon.src.replace(/^\.\//, ''));
+    if (!existsSync(f)) { fail(`namizje: manjka ${icon.src}`); continue; }
+    const [w, h] = pngSize(f) || [0, 0];
+    if (`${w}x${h}` !== icon.sizes) fail(`namizje: ${icon.src} je ${w}×${h}, manifest pravi ${icon.sizes}`);
+  }
+  const touch = (html.match(/apple-touch-icon[^>]*href="\.\/([^"]+)"/) || [])[1];
+  const [tw, th] = touch ? pngSize(join(root, 'public', touch)) || [0, 0] : [0, 0];
+  if (tw !== 180 || th !== 180) fail(`namizje: apple-touch-icon je ${tw}×${th}, iPhone pričakuje 180×180`);
+}
+if (!existsSync(join(root, 'public', 'sw.js'))) fail('namizje: manjka public/sw.js — igra ne bi delovala brez omrežja');
+console.log('Namizje: manifest, ikone in service worker so na mestu.');
+
 /* ── Govor: vsak ključ v manifestu mora imeti svojo datoteko ─────────────────
  *
  * Manjkajoč posnetek je TIH — igra teče naprej in nihče ne opazi, da je nekaj
