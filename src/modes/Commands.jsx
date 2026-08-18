@@ -42,6 +42,24 @@ export default function Commands({ level, onStar, onHome, busy }) {
   const [outcome, setOutcome] = useState(null); // 'bump' | 'short' | 'long'
   const voice = useRef([]);
 
+  // Velikost vidnega polja beremo v JS in ne prek CSS `min(..., 38dvh)`.
+  //
+  // Ta način stoji na natančni geometriji — robot lebdi nad mrežo in mora
+  // pristati točno na polju. CSS je za to dvakrat tvegan: `dvh` v `min()` na
+  // starejšem iOS podre celo deklaracijo (širina pade na `auto`), delitev na
+  // deleže pa pusti podpikselski zdrs, ki se čez šest stolpcev sešteje.
+  // Iz celoštevilske velikosti polja sledi, da se plošča vedno izide na piko.
+  const [vp, setVp] = useState(() => ({ w: window.innerWidth, h: window.innerHeight }));
+  useEffect(() => {
+    const onResize = () => setVp({ w: window.innerWidth, h: window.innerHeight });
+    window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
+    return () => {
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('orientationchange', onResize);
+    };
+  }, []);
+
   const stopVoice = useCallback(() => {
     voice.current.forEach(clearTimeout);
     voice.current = [];
@@ -152,7 +170,18 @@ export default function Commands({ level, onStar, onHome, busy }) {
 
   /* ── Risanje ────────────────────────────────────────────────────────────── */
   const { w, h } = maze;
-  const boardW = `min(92vw, ${w * 56}px)`;
+  // Ploščo merimo v PIKAH in ne v deležih.
+  //
+  // Prej so bila polja `1fr` z `aspect-ratio: 1`. Na namizju je to delovalo, na
+  // iOS (Chrome je tam WebKit) pa je mreža silila čez svojo kartico: WebKit
+  // prispevek polja k širini stolpca izračuna iz razmerja stranic, kar naredi
+  // stolpce širše od proge. Z izrecno velikostjo polja te odvisnosti ni.
+  //
+  // Omejuje jo tudi VIŠINA: na telefonu z brskalnikovo vrstico ostane okoli
+  // 660 pt, mreža 6×6 po 54 px pa bi jo skoraj sama pojedla in bi bilo treba
+  // drseti do gumba ZAŽENI.
+  const cellPx = Math.floor(Math.min(vp.w * 0.9, w * 54, vp.h * 0.38) / w);
+  const boardPx = cellPx * w;
   const rockSet = new Set(maze.rocks.map((r) => `${r.x},${r.y}`));
 
   // Med korakanjem sveti ukaz, ki premik POVZROČA. Na koncu poti pa tisti, ki
@@ -168,7 +197,7 @@ export default function Commands({ level, onStar, onHome, busy }) {
   };
 
   return (
-    <div style={{ width: '100%', maxWidth: 440, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+    <div style={{ width: '100%', maxWidth: 440, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
         <span style={{ fontWeight: 700, fontSize: 'clamp(14px,3.8vw,18px)', color: '#4A4468', letterSpacing: 1 }}>
           🤖 PRIPELJI ROBOTA DO 🏁
@@ -189,17 +218,36 @@ export default function Commands({ level, onStar, onHome, busy }) {
         </span>
       </div>
 
-      {/* Mreža. Brez rež med polji, ker robot lebdi nad njo v odstotkih — z
-          režami bi se odstotki razšli s polji. */}
-      <div style={{ position: 'relative', width: boardW, background: C.white, borderRadius: 18, padding: 6, boxSizing: 'border-box', boxShadow: '0 4px 0 rgba(0,0,0,0.12)' }}>
-        <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: `repeat(${w},1fr)` }}>
+      {/* Mreža. Brez rež med polji, ker robot lebdi nad njo — z režami bi se
+          njegov položaj razšel s polji. */}
+      <div
+        style={{
+          position: 'relative',
+          width: boardPx + 12,
+          background: C.white,
+          borderRadius: 18,
+          padding: 6,
+          boxSizing: 'border-box',
+          boxShadow: '0 4px 0 rgba(0,0,0,0.12)'
+        }}
+      >
+        <div
+          style={{
+            position: 'relative',
+            display: 'grid',
+            gridTemplateColumns: `repeat(${w}, ${cellPx}px)`,
+            gridAutoRows: `${cellPx}px`,
+            width: boardPx,
+            height: cellPx * h
+          }}
+        >
           {Array.from({ length: w * h }).map((_, i) => {
             const x = i % w;
             const y = Math.floor(i / w);
             const isRock = rockSet.has(`${x},${y}`);
             const isGoal = x === maze.goal.x && y === maze.goal.y;
             return (
-              <div key={i} style={{ aspectRatio: '1', padding: 2, boxSizing: 'border-box' }}>
+              <div key={i} style={{ padding: 2, boxSizing: 'border-box' }}>
                 <div
                   style={{
                     width: '100%',
@@ -209,7 +257,7 @@ export default function Commands({ level, onStar, onHome, busy }) {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: 'clamp(18px,5.4vw,26px)'
+                    fontSize: Math.round(cellPx * 0.52)
                   }}
                 >
                   {isRock ? '🪨' : isGoal ? '🏁' : ''}
@@ -222,14 +270,14 @@ export default function Commands({ level, onStar, onHome, busy }) {
             aria-label="Robot"
             style={{
               position: 'absolute',
-              width: `${100 / w}%`,
-              height: `${100 / h}%`,
-              left: `${(robot.x * 100) / w}%`,
-              top: `${(robot.y * 100) / h}%`,
+              width: cellPx,
+              height: cellPx,
+              left: cellPx * robot.x,
+              top: cellPx * robot.y,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: 'clamp(20px,6vw,30px)',
+              fontSize: Math.round(cellPx * 0.6),
               transition: `left ${STEP_MS - 180}ms ease, top ${STEP_MS - 180}ms ease`,
               animation: outcome === 'bump' ? 'shake 0.4s ease' : undefined,
               pointerEvents: 'none'
@@ -305,8 +353,8 @@ export default function Commands({ level, onStar, onHome, busy }) {
             style={{
               flex: 1,
               maxWidth: 82,
-              height: 64,
-              fontSize: 'clamp(24px,7vw,30px)',
+              height: 58,
+              fontSize: 'clamp(22px,6.5vw,28px)',
               borderRadius: 16,
               border: 'none',
               background: C.white,
@@ -321,7 +369,7 @@ export default function Commands({ level, onStar, onHome, busy }) {
       </div>
 
       {/* Sporočilo o izidu. Nikoli modalno okno — otrok mora videti trak, ki ga popravlja. */}
-      <div style={{ minHeight: 44, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+      <div style={{ minHeight: 34, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
         {outcome && (
           <span
             style={{

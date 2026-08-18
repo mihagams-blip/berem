@@ -92,23 +92,25 @@ export default function App() {
       {screen !== 'home' && screen !== 'trophy' && screen !== 'crabs' && <Stars count={stars} />}
 
       {screen === 'home' && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '4vh', width: '100%', maxWidth: '400px' }}>
-          <div style={{ fontSize: '52px', marginBottom: '6px' }}>📖</div>
-          <div style={{ fontWeight: 700, fontSize: 'clamp(40px,11vw,58px)', color: INK, letterSpacing: '3px', marginBottom: '4vh' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '2.5vh', width: '100%', maxWidth: '400px' }}>
+          <div style={{ fontSize: '40px', marginBottom: '2px' }}>📖</div>
+          <div style={{ fontWeight: 700, fontSize: 'clamp(34px,9vw,48px)', color: INK, letterSpacing: '3px', marginBottom: '2.5vh' }}>
             BEREM
           </div>
 
-          {/* Pri lihem številu načinov zadnja ploščica zasede obe koloni, sicer
-              bi zadnja vrstica ostala napol prazna in bi izpadlo kot napaka. */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '12px', width: '100%' }}>
+          {/* Tri kolone in ne dve: pri devetih načinih je stolpec po dva na
+              telefonu segel pod pregib in čipi za težavnost so postali nevidni,
+              dokler otrok ni podrsal. Zadnja osamela ploščica zasede vso širino,
+              da vrstica ne izpade kot napaka. */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '10px', width: '100%' }}>
             {Object.entries(MODES).map(([key, m], i, all) => (
               <button
                 key={key}
-                style={{ ...modeTile(m.color), ...(all.length % 2 === 1 && i === all.length - 1 ? { gridColumn: '1 / -1' } : null) }}
+                style={{ ...modeTile(m.color), ...(all.length % 3 === 1 && i === all.length - 1 ? { gridColumn: '1 / -1' } : null) }}
                 onClick={() => start(key)}
               >
-                <span style={{ fontSize: 'clamp(28px,8vw,36px)' }}>{m.icon}</span>
-                <span style={{ fontSize: 'clamp(13px,3.7vw,16px)', letterSpacing: '0.5px' }}>{m.label}</span>
+                <span style={{ fontSize: 'clamp(24px,7vw,32px)' }}>{m.icon}</span>
+                <span style={{ fontSize: 'clamp(11px,3.1vw,14px)', letterSpacing: '0.3px' }}>{m.label}</span>
               </button>
             ))}
           </div>

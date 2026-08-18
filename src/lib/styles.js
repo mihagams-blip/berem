@@ -10,8 +10,8 @@ export const LEVELS = {
 };
 
 /**
- * Toliko načinov je preveč za stolpec gumbov, zato so ploščice v mreži 2×n.
- * Pri lihem številu zadnja zasede obe koloni — glej `App.jsx`.
+ * Toliko načinov je preveč za stolpec gumbov, zato so ploščice v mreži 3×n.
+ * Če na zadnji vrstici ostane ena sama, zasede vso širino — glej `App.jsx`.
  */
 export const MODES = {
   pics: { icon: '🖼️', label: 'NAJDI SLIKO', color: '#FF5D5D' },
@@ -65,12 +65,12 @@ export const modeTile = (bg) => ({
   borderRadius: '20px',
   boxShadow: '0 5px 0 rgba(0,0,0,0.2)',
   cursor: 'pointer',
-  padding: '16px 8px 14px',
+  padding: '12px 6px 11px',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  gap: '6px',
-  minHeight: '96px',
+  gap: '5px',
+  minHeight: '84px',
   justifyContent: 'center',
   lineHeight: 1.1
 });
